@@ -27,8 +27,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF071530); // deep navy
-    const accentColor = Color(0xFFFFC857); // warm yellow
+    const primaryColor = Color(0xFF1976D2); // blue
+    const accentColor = Color(0xFFFF9800); // orange
 
     final baseTheme = ThemeData(
       useMaterial3: true,
@@ -36,9 +36,9 @@ class MyApp extends StatelessWidget {
         seedColor: primaryColor,
         primary: primaryColor,
         secondary: accentColor,
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: primaryColor,
+      scaffoldBackgroundColor: Colors.grey.shade50,
       fontFamily: 'Roboto',
     );
 
@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
         theme: baseTheme.copyWith(
           appBarTheme: baseTheme.appBarTheme.copyWith(
             backgroundColor: primaryColor,
-            elevation: 0,
+            elevation: 1,
             centerTitle: true,
             titleTextStyle: const TextStyle(
               fontSize: 20,
@@ -79,8 +79,8 @@ class MyApp extends StatelessWidget {
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: accentColor,
-              foregroundColor: Colors.black,
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -93,16 +93,20 @@ class MyApp extends StatelessWidget {
           ),
           inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
             filled: true,
-            fillColor: const Color(0xFF0C2146),
-            labelStyle: const TextStyle(color: Colors.white70),
-            hintStyle: const TextStyle(color: Colors.white54),
+            fillColor: Colors.white,
+            labelStyle: const TextStyle(color: Colors.black87),
+            hintStyle: const TextStyle(color: Colors.black54),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: accentColor, width: 2),
+              borderSide: const BorderSide(color: primaryColor, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -110,8 +114,8 @@ class MyApp extends StatelessWidget {
             ),
           ),
           textTheme: baseTheme.textTheme.apply(
-            bodyColor: Colors.white,
-            displayColor: Colors.white,
+            bodyColor: Colors.black87,
+            displayColor: Colors.black87,
           ),
         ),
         home: const App(),

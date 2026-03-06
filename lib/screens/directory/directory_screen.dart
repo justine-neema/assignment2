@@ -45,13 +45,15 @@ void dispose() {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Search listings...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                     filled: true,
                     fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
+                  style: const TextStyle(color: Colors.black87),
                   onChanged: (value) {
                     Provider.of<ListingProvider>(context, listen: false)
                         .setSearchQuery(value);
