@@ -7,8 +7,25 @@ import 'package:assignment2/widgets/listing_card.dart';
 import 'package:assignment2/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
 
-class MyListingsScreen extends StatelessWidget {
+class MyListingsScreen extends StatefulWidget {
   const MyListingsScreen({super.key});
+
+  @override
+  State<MyListingsScreen> createState() => _MyListingsScreenState();
+}
+
+class _MyListingsScreenState extends State<MyListingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final listingProvider = Provider.of<ListingProvider>(context, listen: false);
+      if (authProvider.user != null) {
+        listingProvider.listenToUserListings(authProvider.user!.uid);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +50,27 @@ class MyListingsScreen extends StatelessWidget {
         builder: (context, authProvider, listingProvider, child) {
           if (listingProvider.isLoading) {
             return const LoadingWidget();
+          }
+
+          if (listingProvider.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 60,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    listingProvider.error!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (listingProvider.userListings.isEmpty) {

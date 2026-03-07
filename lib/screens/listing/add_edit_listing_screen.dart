@@ -36,6 +36,10 @@ class _AddEditListingScreenState extends State<AddEditListingScreen> {
   @override
   void initState() {
     super.initState();
+    // Set default Kigali coordinates
+    _latitudeController.text = '-1.9441';
+    _longitudeController.text = '30.0619';
+    
     if (widget.listing != null) {
       // Edit mode - populate fields
       _nameController.text = widget.listing!.name;
@@ -215,6 +219,13 @@ class _AddEditListingScreenState extends State<AddEditListingScreen> {
                 : 'Listing created successfully',
           ),
           backgroundColor: Colors.green,
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(listingProvider.error ?? 'Failed to save listing'),
+          backgroundColor: Colors.red,
         ),
       );
     }

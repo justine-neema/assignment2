@@ -108,11 +108,12 @@ class ListingProvider extends ChangeNotifier {
 
     try {
       final id = await _listingService.createListing(listing);
-      print('Listing created with ID: $id');
+      debugPrint('Listing created with ID: $id');
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      debugPrint('Error creating listing: $e');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();

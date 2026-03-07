@@ -54,12 +54,14 @@ class ListingService {
     return _firestore
         .collection(AppConstants.listingsCollection)
         .where('createdBy', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
+          final listings = snapshot.docs.map((doc) {
             return ListingModel.fromMap(doc.id, doc.data());
           }).toList();
+          // Sort in app instead of in query
+          listings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return listings;
         });
   }
 

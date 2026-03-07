@@ -18,9 +18,6 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   @override
 void initState() {
   super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    Provider.of<ListingProvider>(context, listen: false).listenToAllListings();
-  });
 }
 
 @override

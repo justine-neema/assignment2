@@ -27,6 +27,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final listingProvider = Provider.of<ListingProvider>(context, listen: false);
       
+      // Start listening to all listings
+      listingProvider.listenToAllListings();
+      
       // Load user listings
       if (authProvider.user != null) {
         listingProvider.listenToUserListings(authProvider.user!.uid);
