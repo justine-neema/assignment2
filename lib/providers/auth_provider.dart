@@ -19,14 +19,18 @@ class AuthProvider extends ChangeNotifier {
   UserModel? get userModel => _userModel;
   bool get isLoading => _isLoading;
   String? get error => _error;
-
   bool get isEmailVerified => _user?.emailVerified ?? false;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   AuthProvider() {
+    // Set initial loading state
+    _isLoading = true;
+
+    // Listen to Firebase auth state changes
     _auth.authStateChanges().listen((User? user) {
       _user = user;
+      _isLoading = false;
 
       if (user != null) {
         _loadUserModel(user.uid);
@@ -123,10 +127,7 @@ class AuthProvider extends ChangeNotifier {
   // ================================
   // SIGN IN
   // ================================
-  Future<bool> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> signIn({required String email, required String password}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -161,18 +162,27 @@ class AuthProvider extends ChangeNotifier {
   // ================================
   // CHECK EMAIL VERIFICATION
   // ================================
+  /// Reloads the current user from Firebase and checks email verification.
+  /// Returns true if email is verified.
+  /// Triggers notifyListeners() to update UI via Consumer.
   Future<bool> checkEmailVerification() async {
     try {
-      await _auth.currentUser?.reload();
+      final currentUser = _auth.currentUser;
 
-      final user = _auth.currentUser;
-
-      if (user != null) {
-        _user = user;
-        notifyListeners();
+      if (currentUser == null) {
+        return false;
       }
 
-      return user?.emailVerified ?? false;
+      // Reload user to get latest data from Firebase
+      await currentUser.reload();
+
+      // Get the refreshed user instance
+      _user = _auth.currentUser;
+
+      // Notify listeners so App widget (Consumer) rebuilds
+      notifyListeners();
+
+      return _user?.emailVerified ?? false;
     } catch (e) {
       debugPrint("Verification check error: $e");
       return false;
@@ -187,7 +197,16 @@ class AuthProvider extends ChangeNotifier {
       await _auth.currentUser?.sendEmailVerification();
     } catch (e) {
       debugPrint("Resend verification error: $e");
+      rethrow; // Re-throw so caller can handle
     }
+  }
+
+  // ================================
+  // CLEAR ERROR
+  // ================================
+  void clearError() {
+    _error = null;
+    notifyListeners();
   }
 
   // ================================

@@ -21,6 +21,17 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+
+    // Clear any previous errors when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.clearError();
+    });
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -59,19 +70,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
                   const Text(
                     'Welcome Back',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'Sign in to continue discovering Kigali',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
@@ -109,7 +114,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     label: 'Password',
                     prefixIcon: Icons.lock,
-                    suffixIcon: _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                    suffixIcon: _obscurePassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                     onSuffixTap: () {
                       setState(() {
                         _obscurePassword = !_obscurePassword;
@@ -164,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text("Don't have an account? "),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushReplacement(
+                          Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const SignupScreen(),
@@ -188,13 +195,36 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin(AuthProvider authProvider) async {
-    if (_formKey.currentState!.validate()) {
-      await authProvider.signIn(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final success = await authProvider.signIn(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
+    // Navigation handled automatically by App widget via Consumer
+    // - If user's email is verified → MainNavigationScreen
+    // - If user's email is NOT verified → VerifyEmailScreen
+    // - If login fails, error is displayed via authProvider.error
+
+    if (success && mounted) {
+      // Optional: Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Login successful!'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 1),
+        ),
       );
-      
-      // Navigation handled by App widget via auth state
     }
   }
 }

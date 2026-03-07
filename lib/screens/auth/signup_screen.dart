@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:assignment2/core/utils/validators.dart';
 import 'package:assignment2/providers/auth_provider.dart';
+import 'package:assignment2/screens/auth/login_screen.dart';
 import 'package:assignment2/widgets/custom_textfield.dart';
 import 'package:assignment2/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +14,6 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -26,6 +26,17 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _acceptedTerms = false;
 
   @override
+  void initState() {
+    super.initState();
+
+    // Clear any previous errors when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.clearError();
+    });
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -36,33 +47,21 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Account'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
       ),
-
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-
           child: Form(
             key: _formKey,
-
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-
                 children: [
-
                   const SizedBox(height: 20),
 
                   Container(
@@ -82,10 +81,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   const Text(
                     'Join Our Community',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
 
@@ -93,10 +89,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   const Text(
                     'Create an account to explore Kigali',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
 
@@ -173,8 +166,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         : Icons.visibility_off,
                     onSuffixTap: () {
                       setState(() {
-                        _obscureConfirmPassword =
-                            !_obscureConfirmPassword;
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
                       });
                     },
                     obscureText: _obscureConfirmPassword,
@@ -190,8 +182,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       return null;
                     },
                     textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) =>
-                        _handleSignUp(authProvider),
+                    onFieldSubmitted: (_) => _handleSignUp(authProvider),
                   ),
 
                   const SizedBox(height: 16),
@@ -207,7 +198,6 @@ class _SignupScreenState extends State<SignupScreen> {
                           });
                         },
                       ),
-
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
@@ -235,11 +225,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           ? () => _handleSignUp(authProvider)
                           : null,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: const Text(
@@ -255,17 +243,13 @@ class _SignupScreenState extends State<SignupScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('Already have an account? '),
-
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
                         },
-
                         child: const Text(
                           'Sign In',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -280,19 +264,21 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _handleSignUp(AuthProvider authProvider) async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-    if (_formKey.currentState!.validate()) {
+    final success = await authProvider.signUp(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      displayName: _nameController.text.trim(),
+    );
 
-      final success = await authProvider.signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-        displayName: _nameController.text.trim(),
-      );
-
-      // Navigation handled by App widget via auth state
-      if (!success && mounted) {
-        // Error already shown in UI via authProvider.error
-      }
+    if (success && mounted) {
+      // Pop the signup screen off the stack.
+      // The home route (App widget) will now show VerifyEmailScreen
+      // because the user exists but email is not yet verified.
+      Navigator.of(context).pop();
     }
   }
 }
