@@ -13,12 +13,14 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+
   final _formKey = GlobalKey<FormState>();
+
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptedTerms = false;
@@ -34,6 +36,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
@@ -46,16 +49,22 @@ class _SignupScreenState extends State<SignupScreen> {
           },
         ),
       ),
+
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
+
           child: Form(
             key: _formKey,
+
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+
                 children: [
+
                   const SizedBox(height: 20),
+
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -68,7 +77,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       color: Colors.blue,
                     ),
                   ),
+
                   const SizedBox(height: 20),
+
                   const Text(
                     'Join Our Community',
                     style: TextStyle(
@@ -77,7 +88,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
+
                   const SizedBox(height: 8),
+
                   const Text(
                     'Create an account to explore Kigali',
                     style: TextStyle(
@@ -86,6 +99,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
+
                   const SizedBox(height: 30),
 
                   // Error message
@@ -103,6 +117,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         textAlign: TextAlign.center,
                       ),
                     ),
+
                   const SizedBox(height: 16),
 
                   // Name field
@@ -113,6 +128,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     validator: Validators.validateName,
                     textInputAction: TextInputAction.next,
                   ),
+
                   const SizedBox(height: 16),
 
                   // Email field
@@ -124,6 +140,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                   ),
+
                   const SizedBox(height: 16),
 
                   // Password field
@@ -131,7 +148,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     controller: _passwordController,
                     label: 'Password',
                     prefixIcon: Icons.lock,
-                    suffixIcon: _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                    suffixIcon: _obscurePassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                     onSuffixTap: () {
                       setState(() {
                         _obscurePassword = !_obscurePassword;
@@ -141,6 +160,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     validator: Validators.validatePassword,
                     textInputAction: TextInputAction.next,
                   ),
+
                   const SizedBox(height: 16),
 
                   // Confirm password field
@@ -148,10 +168,13 @@ class _SignupScreenState extends State<SignupScreen> {
                     controller: _confirmPasswordController,
                     label: 'Confirm Password',
                     prefixIcon: Icons.lock_outline,
-                    suffixIcon: _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                    suffixIcon: _obscureConfirmPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                     onSuffixTap: () {
                       setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                        _obscureConfirmPassword =
+                            !_obscureConfirmPassword;
                       });
                     },
                     obscureText: _obscureConfirmPassword,
@@ -159,14 +182,18 @@ class _SignupScreenState extends State<SignupScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please confirm your password';
                       }
+
                       if (value != _passwordController.text) {
                         return 'Passwords do not match';
                       }
+
                       return null;
                     },
                     textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _handleSignUp(authProvider),
+                    onFieldSubmitted: (_) =>
+                        _handleSignUp(authProvider),
                   ),
+
                   const SizedBox(height: 16),
 
                   // Terms and conditions
@@ -180,6 +207,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           });
                         },
                       ),
+
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
@@ -195,6 +223,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 24),
 
                   // Sign up button
@@ -202,13 +231,15 @@ class _SignupScreenState extends State<SignupScreen> {
                     const LoadingWidget()
                   else
                     ElevatedButton(
-                      onPressed: _acceptedTerms 
+                      onPressed: _acceptedTerms
                           ? () => _handleSignUp(authProvider)
                           : null,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius:
+                              BorderRadius.circular(8),
                         ),
                       ),
                       child: const Text(
@@ -216,6 +247,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         style: TextStyle(fontSize: 16),
                       ),
                     ),
+
                   const SizedBox(height: 16),
 
                   // Login link
@@ -223,13 +255,17 @@ class _SignupScreenState extends State<SignupScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('Already have an account? '),
+
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
                         },
+
                         child: const Text(
                           'Sign In',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -244,24 +280,18 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _handleSignUp(AuthProvider authProvider) async {
+
     if (_formKey.currentState!.validate()) {
+
       final success = await authProvider.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
         displayName: _nameController.text.trim(),
       );
-      
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Account created successfully! Please check your email for verification.',
-            ),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        Navigator.pop(context); // Go back to login screen
+
+      // Navigation handled by App widget via auth state
+      if (!success && mounted) {
+        // Error already shown in UI via authProvider.error
       }
     }
   }

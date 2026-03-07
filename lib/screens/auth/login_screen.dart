@@ -189,20 +189,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin(AuthProvider authProvider) async {
     if (_formKey.currentState!.validate()) {
-      final success = await authProvider.signIn(
+      await authProvider.signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
       
-      if (!success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.error ?? 'Login failed'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      // Navigation handled by App widget via auth state
     }
   }
 }

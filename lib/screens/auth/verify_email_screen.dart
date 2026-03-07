@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:assignment2/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +11,35 @@ class VerifyEmailScreen extends StatefulWidget {
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
+  Timer? _verificationTimer;
   bool _isResending = false;
-  bool _isChecking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startVerificationCheck();
+  }
+
+  void _startVerificationCheck() {
+    _verificationTimer = Timer.periodic(
+      const Duration(seconds: 3),
+      (timer) async {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.checkEmailVerification();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _verificationTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,95 +72,65 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'We\'ve sent a verification email to:\n${authProvider.user?.email ?? ''}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Please check your email and click the verification link to continue.',
+                'We\'ve sent a verification email to:',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                authProvider.user?.email ?? '',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Please check your email and click the verification link.\nYou will be automatically logged in once verified.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
                 ),
               ),
               const SizedBox(height: 40),
               
-              // Check verification button
-              if (_isChecking)
-                const CircularProgressIndicator()
-              else
-                ElevatedButton(
-                  onPressed: () async {
-                    setState(() => _isChecking = true);
-                    final isVerified = await authProvider.checkEmailVerification();
-                    setState(() => _isChecking = false);
-                    
-                    if (isVerified && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Email verified successfully!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Email not verified yet. Please check your inbox.'),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              // Auto-checking indicator
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.blue.shade700,
                     ),
                   ),
-                  child: const Text(
-                    'I\'ve Verified My Email',
-                    style: TextStyle(fontSize: 16),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Checking verification status...',
+                    style: TextStyle(color: Colors.grey.shade600),
                   ),
-                ),
-              const SizedBox(height: 16),
+                ],
+              ),
+              const SizedBox(height: 40),
               
               // Resend email button
-              TextButton(
-                onPressed: _isResending
-                    ? null
-                    : () async {
-                        setState(() => _isResending = true);
-                        try {
-                          await authProvider.resendVerificationEmail();
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Verification email resent!'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to resend: ${e.toString()}'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        } finally {
-                          if (mounted) {
-                            setState(() => _isResending = false);
-                          }
-                        }
-                      },
+              OutlinedButton(
+                onPressed: _isResending ? null : _resendEmail,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 child: _isResending
                     ? const SizedBox(
                         height: 20,
@@ -141,14 +139,25 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       )
                     : const Text('Resend Verification Email'),
               ),
-              const SizedBox(height: 8),
-              TextButton(
+              const SizedBox(height: 12),
+              
+              // Sign out button
+              ElevatedButton(
                 onPressed: () async {
+                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
                   await authProvider.signOut();
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 child: const Text(
-                  'Use Different Account',
-                  style: TextStyle(color: Colors.red),
+                  'Sign Out',
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
             ],
@@ -156,5 +165,36 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _resendEmail() async {
+    setState(() => _isResending = true);
+    
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.resendVerificationEmail();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Verification email resent!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to resend: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isResending = false);
+      }
+    }
   }
 }

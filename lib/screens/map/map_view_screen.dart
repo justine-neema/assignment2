@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:assignment2/models/listing_model.dart';
 import 'package:assignment2/providers/listing_provider.dart';
 import 'package:assignment2/screens/listing/listing_detail_screen.dart';
+import 'package:assignment2/services/map_service.dart';
+import 'package:assignment2/widgets/map_widget.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:provider/provider.dart';
 
 class MapViewScreen extends StatefulWidget {
@@ -13,13 +16,14 @@ class MapViewScreen extends StatefulWidget {
 }
 
 class _MapViewScreenState extends State<MapViewScreen> {
-  GoogleMapController? _mapController;
-  final Set<Marker> _markers = {};
+  final MapService _mapService = MapService();
+  final MapController _mapController = MapController();
+  final TextEditingController _searchController = TextEditingController();
+  List<Marker> _markers = [];
 
   @override
   void initState() {
     super.initState();
-    // Listen to listings when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<ListingProvider>(context, listen: false);
       provider.listenToAllListings();
@@ -27,101 +31,116 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _searchLocation(String query) {
+    if (query.isEmpty) return;
+    
+    // Search in listings
+    final provider = Provider.of<ListingProvider>(context, listen: false);
+    final results = provider.allListings.where((listing) {
+      return listing.name.toLowerCase().contains(query.toLowerCase()) ||
+             listing.address.toLowerCase().contains(query.toLowerCase()) ||
+             listing.category.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
+    if (results.isNotEmpty) {
+      // Move to first result
+      _mapController.move(results.first.location, 16);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Found ${results.length} result(s)')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No results found')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Map View'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.my_location),
+            onPressed: () {
+              _mapController.move(_mapService.getDefaultLocation(), 13);
+            },
+          ),
+        ],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.map_outlined,
-                size: 100,
-                color: Colors.grey.shade400,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Map View Temporarily Disabled',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+      body: Column(
+        children: [
+          // Search bar
+          Container(
+            padding: const EdgeInsets.all(12),
+            color: Colors.white,
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search location, name, or category...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                          });
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                textAlign: TextAlign.center,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Google Maps API key is required for this feature.\nYou can still view listings in the Directory.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
-                textAlign: TextAlign.center,
+              onChanged: (value) => setState(() {}),
+              onSubmitted: _searchLocation,
+            ),
+          ),
+          // Map
+          Expanded(
+            child: Consumer<ListingProvider>(
+        builder: (context, provider, child) {
+          if (provider.allListings.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.map_outlined, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('No listings to display on map'),
+                ],
               ),
-            ],
+            );
+          }
+
+          _markers = provider.allListings.map((listing) {
+            return _mapService.createMarker(
+              id: listing.id,
+              position: listing.location,
+              label: listing.name,
+              onTap: () => _showListingDetails(context, listing),
+            );
+          }).toList();
+
+          return MapWidget(
+            controller: _mapController,
+            center: _mapService.getDefaultLocation(),
+            markers: _markers,
+          );
+            },
           ),
         ),
+      ],
       ),
     );
-  }
-
-  void _updateMarkers(List<ListingModel> listings) {
-    final newMarkers = listings.map((listing) {
-      return Marker(
-        markerId: MarkerId(listing.id),
-        position: LatLng(listing.latitude, listing.longitude),
-        infoWindow: InfoWindow(
-          title: listing.name,
-          snippet: listing.category,
-        ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          _getCategoryHue(listing.category),
-        ),
-        onTap: () {
-          _showListingDetails(context, listing);
-        },
-      );
-    }).toSet();
-
-    setState(() {
-      _markers.clear();
-      _markers.addAll(newMarkers);
-    });
-  }
-
-  double _getCategoryHue(String category) {
-    switch (category) {
-      case 'Hospital':
-        return BitmapDescriptor.hueRed;
-      case 'Police Station':
-        return BitmapDescriptor.hueBlue;
-      case 'Library':
-        return BitmapDescriptor.hueGreen;
-      case 'Restaurant':
-        return BitmapDescriptor.hueOrange;
-      case 'Café':
-        return BitmapDescriptor.hueViolet;
-      case 'Park':
-        return BitmapDescriptor.hueGreen;
-      case 'Tourist Attraction':
-        return BitmapDescriptor.hueYellow;
-      case 'Pharmacy':
-        return BitmapDescriptor.hueCyan;
-      case 'Bank':
-        return BitmapDescriptor.hueAzure;
-      case 'School':
-        return BitmapDescriptor.hueMagenta;
-      default:
-        return BitmapDescriptor.hueRed;
-    }
-  }
-
-  void _refreshMarkers() {
-    final provider = Provider.of<ListingProvider>(context, listen: false);
-    provider.listenToAllListings();
   }
 
   void _showListingDetails(BuildContext context, ListingModel listing) {
@@ -188,7 +207,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        _animateToLocation(listing.location);
+                        _mapController.move(listing.location, 16);
                       },
                       child: const Text('Center Map'),
                     ),
@@ -199,12 +218,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
           ),
         );
       },
-    );
-  }
-
-  void _animateToLocation(LatLng location) {
-    _mapController?.animateCamera(
-      CameraUpdate.newLatLngZoom(location, 16),
     );
   }
 }

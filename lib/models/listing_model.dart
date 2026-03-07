@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 
 class ListingModel {
   final String id;
@@ -51,7 +51,7 @@ class ListingModel {
     this.reviewCount,
   });
 
-  // Helper getter for LatLng
+  // Helper getter for LatLng (flutter_map)
   LatLng get location => LatLng(latitude, longitude);
 
   Map<String, dynamic> toMap() {

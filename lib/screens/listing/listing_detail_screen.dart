@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:assignment2/models/listing_model.dart';
 import 'package:assignment2/providers/listing_provider.dart';
+import 'package:assignment2/services/map_service.dart';
 import 'package:assignment2/widgets/loading_widget.dart';
+import 'package:assignment2/widgets/map_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,6 +20,7 @@ class ListingDetailScreen extends StatefulWidget {
 class _ListingDetailScreenState extends State<ListingDetailScreen> {
   ListingModel? _listing;
   bool _isLoading = true;
+  final MapService _mapService = MapService();
 
   @override
   void initState() {
@@ -68,16 +71,12 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
 
   Future<void> _openDirections() async {
     if (_listing == null) return;
-    
-    final url = 'https://www.google.com/maps/dir/?api=1&destination=${_listing!.latitude},${_listing!.longitude}';
-    await _launchURL(url);
+    await _mapService.getDirections(_listing!.latitude, _listing!.longitude);
   }
 
   Future<void> _openInMaps() async {
     if (_listing == null) return;
-    
-    final url = 'https://www.google.com/maps/search/?api=1&query=${_listing!.latitude},${_listing!.longitude}';
-    await _launchURL(url);
+    await _mapService.openInMaps(_listing!.latitude, _listing!.longitude);
   }
 
   String _formatDate(DateTime date) {
@@ -119,34 +118,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Map Preview - Temporarily Disabled
-            Container(
+            // Map Preview
+            SizedBox(
               height: 200,
               width: double.infinity,
-              color: Colors.grey.shade200,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.map_outlined,
-                    size: 60,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Map Preview Disabled',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Coordinates: ${listing.latitude.toStringAsFixed(6)}, ${listing.longitude.toStringAsFixed(6)}',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 12,
-                    ),
+              child: MapWidget(
+                center: listing.location,
+                zoom: 15,
+                markers: [
+                  _mapService.createMarker(
+                    id: listing.id,
+                    position: listing.location,
+                    label: listing.name,
                   ),
                 ],
               ),

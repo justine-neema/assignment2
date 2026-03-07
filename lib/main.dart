@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:assignment2/app.dart';
 import 'package:assignment2/providers/auth_provider.dart';
 import 'package:assignment2/providers/listing_provider.dart';
+import 'package:assignment2/providers/map_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -46,6 +47,9 @@ class MyApp extends StatelessWidget {
       providers: [
         // Auth provider must be initialized first
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+
+        // Map provider
+        ChangeNotifierProvider(create: (_) => MapProvider()),
 
         // Listing provider depends on auth state
         ChangeNotifierProxyProvider<AuthProvider, ListingProvider>(

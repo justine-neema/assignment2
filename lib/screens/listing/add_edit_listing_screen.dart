@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:assignment2/core/utils/validators.dart';
 import 'package:assignment2/models/listing_model.dart';
 import 'package:assignment2/providers/auth_provider.dart';
 import 'package:assignment2/providers/listing_provider.dart';
-import 'package:assignment2/screens/map/location_picker_screen.dart';
 import 'package:assignment2/widgets/custom_textfield.dart';
 import 'package:assignment2/widgets/loading_widget.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 class AddEditListingScreen extends StatefulWidget {
@@ -68,24 +67,6 @@ class _AddEditListingScreenState extends State<AddEditListingScreen> {
     super.dispose();
   }
 
-  Future<void> _pickLocationOnMap() async {
-    final result = await Navigator.push<Map<String, dynamic>>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LocationPickerScreen(
-          initialLocation: _selectedLocation,
-        ),
-      ),
-    );
-
-    if (result != null) {
-      setState(() {
-        _selectedLocation = result['location'] as LatLng;
-        _addressController.text = result['address'] as String;
-      });
-    }
-  }
-
   Future<void> _getCurrentLocation() async {
     setState(() => _isGettingLocation = true);
 
@@ -100,6 +81,7 @@ class _AddEditListingScreenState extends State<AddEditListingScreen> {
             ),
           );
         }
+        setState(() => _isGettingLocation = false);
         return;
       }
 
@@ -107,6 +89,7 @@ class _AddEditListingScreenState extends State<AddEditListingScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
+          setState(() => _isGettingLocation = false);
           return;
         }
       }
@@ -120,6 +103,7 @@ class _AddEditListingScreenState extends State<AddEditListingScreen> {
             ),
           );
         }
+        setState(() => _isGettingLocation = false);
         return;
       }
 
@@ -128,11 +112,10 @@ class _AddEditListingScreenState extends State<AddEditListingScreen> {
       );
       
       setState(() {
+        _latitudeController.text = position.latitude.toString();
+        _longitudeController.text = position.longitude.toString();
         _selectedLocation = LatLng(position.latitude, position.longitude);
       });
-
-      // Get address from coordinates
-      // You can implement reverse geocoding here if needed
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -326,18 +309,21 @@ class _AddEditListingScreenState extends State<AddEditListingScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Location Picker Button (Optional - will show error without API key)
+                    // Use Current Location Button
                     OutlinedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Map picker temporarily disabled. Use coordinates above.'),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.map),
-                      label: const Text('Pick on Map (Disabled)'),
+                      onPressed: _isGettingLocation ? null : _getCurrentLocation,
+                      icon: _isGettingLocation
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.my_location),
+                      label: Text(
+                        _isGettingLocation
+                            ? 'Getting Location...'
+                            : 'Use Current Location',
+                      ),
                     ),
                     const SizedBox(height: 16),
 

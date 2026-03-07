@@ -18,11 +18,11 @@ dependencies:
   # State Management
   provider: ^6.1.2
   
-  # Maps & Location
-  google_maps_flutter: ^2.12.0  # Updated
-  geolocator: ^13.0.3  # Updated
-  url_launcher: ^6.3.1  # Updated
-  geocoding: ^3.0.0
+  # Maps & Location - Using flutter_map (OpenStreetMap)
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  geolocator: ^13.0.3
+  url_launcher: ^6.3.1
   
   # Image Picker
   image_picker: ^1.1.2  # Updated
