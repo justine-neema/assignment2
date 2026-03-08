@@ -96,10 +96,25 @@ class MapService {
 
   // Get directions to location
   Future<void> getDirections(double latitude, double longitude) async {
-    final url = 'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude';
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      // Try geo: scheme first (native maps)
+      final geoUrl = 'geo:$latitude,$longitude';
+      final geoUri = Uri.parse(geoUrl);
+      
+      if (await canLaunchUrl(geoUri)) {
+        await launchUrl(geoUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      
+      // Fallback to Google Maps
+      final mapsUrl = 'https://maps.google.com/maps?daddr=$latitude,$longitude';
+      final mapsUri = Uri.parse(mapsUrl);
+      
+      if (await canLaunchUrl(mapsUri)) {
+        await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('Error opening directions: $e');
     }
   }
 }

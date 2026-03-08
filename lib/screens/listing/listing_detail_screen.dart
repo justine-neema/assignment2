@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:latlong2/latlong.dart';
 import 'package:assignment2/models/listing_model.dart';
 import 'package:assignment2/providers/listing_provider.dart';
 import 'package:assignment2/services/map_service.dart';
@@ -43,40 +42,60 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not launch URL'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     }
   }
 
   Future<void> _launchPhone(String phone) async {
-    final Uri uri = Uri.parse('tel:$phone');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
-  }
-
-  Future<void> _launchEmail(String email) async {
-    final Uri uri = Uri.parse('mailto:$email');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Call'),
+        content: Text('Phone: $phone'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final Uri uri = Uri.parse('tel:$phone');
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: const Text('Call Now'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _openDirections() async {
     if (_listing == null) return;
-    await _mapService.getDirections(_listing!.latitude, _listing!.longitude);
-  }
-
-  Future<void> _openInMaps() async {
-    if (_listing == null) return;
-    await _mapService.openInMaps(_listing!.latitude, _listing!.longitude);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Directions'),
+        content: Text(
+          'Location: ${_listing!.latitude}, ${_listing!.longitude}\n\nAddress: ${_listing!.address}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _mapService.getDirections(
+                _listing!.latitude,
+                _listing!.longitude,
+              );
+            },
+            child: const Text('Open Maps'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _formatDate(DateTime date) {
@@ -94,9 +113,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     if (_listing == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(
-          child: Text('Listing not found'),
-        ),
+        body: const Center(child: Text('Listing not found')),
       );
     }
 
@@ -105,20 +122,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(listing.name),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              // Implement share functionality
-            },
-          ),
-        ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Map Preview
             SizedBox(
               height: 200,
               width: double.infinity,
@@ -134,21 +146,16 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                 ],
               ),
             ),
-            
-            // Content
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category chip
                   Chip(
                     label: Text(listing.category),
                     backgroundColor: Colors.blue.shade100,
                   ),
                   const SizedBox(height: 16),
-
-                  // Quick actions
                   Row(
                     children: [
                       Expanded(
@@ -168,73 +175,61 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                           onTap: _openDirections,
                         ),
                       ),
-                      if (listing.website != null) ...[
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildActionButton(
-                            icon: Icons.language,
-                            label: 'Website',
-                            color: Colors.purple,
-                            onTap: () => _launchURL(listing.website!),
+                      if (listing.website != null)
+                        ...[
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildActionButton(
+                              icon: Icons.language,
+                              label: 'Website',
+                              color: Colors.purple,
+                              onTap: () => _launchURL(listing.website!),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  // Details
-                  _buildSection(
-                    'Address',
-                    Icons.location_on,
-                    listing.address,
-                  ),
+                  _buildSection('Address', Icons.location_on, listing.address),
                   const Divider(),
-                  
-                  _buildSection(
-                    'Contact',
-                    Icons.phone,
-                    listing.contactNumber,
-                  ),
+                  _buildSection('Contact', Icons.phone, listing.contactNumber),
                   const Divider(),
-                  
-                  _buildSection(
-                    'Description',
-                    Icons.description,
-                    listing.description,
-                  ),
+                  _buildSection('Description', Icons.description, listing.description),
                   const Divider(),
-                  
-                  if (listing.email != null)
-                    _buildSection(
-                      'Email',
-                      Icons.email,
-                      listing.email!,
-                    ),
-                  if (listing.email != null) const Divider(),
-                  
-                  _buildSection(
-                    'Added by',
-                    Icons.person,
-                    'User ID: ${listing.createdBy.substring(0, 8)}...',
-                  ),
-                  const Divider(),
-                  
-                  _buildSection(
-                    'Added on',
-                    Icons.access_time,
-                    _formatDate(listing.createdAt),
-                  ),
-                  if (listing.updatedAt != listing.createdAt) ...[
+                  if (listing.email != null) ...[
+                    _buildSection('Email', Icons.email, listing.email!),
                     const Divider(),
-                    _buildSection(
-                      'Updated on',
-                      Icons.update,
-                      _formatDate(listing.updatedAt),
-                    ),
                   ],
+                  _buildSection('Added on', Icons.access_time, _formatDate(listing.createdAt)),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'Back',
+              onPressed: () => Navigator.pop(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.list),
+              tooltip: 'Directory',
+              onPressed: () => Navigator.pop(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.my_location),
+              tooltip: 'My Listings',
+              onPressed: () => Navigator.pop(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.map),
+              tooltip: 'Map',
+              onPressed: () => Navigator.pop(context),
             ),
           ],
         ),
