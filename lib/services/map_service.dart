@@ -25,15 +25,18 @@ class MapService {
     required String label,
     void Function()? onTap,
   }) {
+    final colors = [Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple];
+    final color = colors[id.hashCode.abs() % colors.length];
+    
     return Marker(
       point: position,
       width: 40,
       height: 40,
       child: GestureDetector(
         onTap: onTap,
-        child: const Icon(
+        child: Icon(
           Icons.location_on,
-          color: Colors.red,
+          color: color,
           size: 40,
         ),
       ),

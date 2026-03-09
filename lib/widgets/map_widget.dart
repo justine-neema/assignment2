@@ -7,6 +7,7 @@ class MapWidget extends StatelessWidget {
   final LatLng? center;
   final double zoom;
   final List<Marker> markers;
+  final List<Polyline> polylines;
   final MapController? controller;
   final Function(LatLng)? onTap;
   final bool showZoomControls;
@@ -16,6 +17,7 @@ class MapWidget extends StatelessWidget {
     this.center,
     this.zoom = MapService.defaultZoom,
     this.markers = const [],
+    this.polylines = const [],
     this.controller,
     this.onTap,
     this.showZoomControls = true,
@@ -34,6 +36,7 @@ class MapWidget extends StatelessWidget {
       ),
       children: [
         mapService.getTileLayer(),
+        if (polylines.isNotEmpty) PolylineLayer(polylines: polylines),
         MarkerLayer(markers: markers),
       ],
     );

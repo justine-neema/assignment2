@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:assignment2/models/listing_model.dart';
 import 'package:assignment2/providers/listing_provider.dart';
+import 'package:assignment2/screens/map/map_directions_screen.dart';
 import 'package:assignment2/services/map_service.dart';
 import 'package:assignment2/widgets/loading_widget.dart';
 import 'package:assignment2/widgets/map_widget.dart';
@@ -70,30 +71,12 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     );
   }
 
-  Future<void> _openDirections() async {
+  void _openDirections() {
     if (_listing == null) return;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Directions'),
-        content: Text(
-          'Location: ${_listing!.latitude}, ${_listing!.longitude}\n\nAddress: ${_listing!.address}',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _mapService.getDirections(
-                _listing!.latitude,
-                _listing!.longitude,
-              );
-            },
-            child: const Text('Open Maps'),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapDirectionsScreen(listing: _listing!),
       ),
     );
   }

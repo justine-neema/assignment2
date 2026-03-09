@@ -125,6 +125,12 @@ class _MapViewScreenState extends State<MapViewScreen> {
             );
           }).toList();
 
+          debugPrint('Total listings: ${provider.allListings.length}');
+          debugPrint('Total markers: ${_markers.length}');
+          for (var listing in provider.allListings) {
+            debugPrint('Listing: ${listing.name} at ${listing.latitude}, ${listing.longitude}');
+          }
+
           return MapWidget(
             controller: _mapController,
             center: _mapService.getDefaultLocation(),
