@@ -41,14 +41,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      // Check verification - this will trigger notifyListeners()
-      // which causes App widget Consumer to rebuild
+      // Check verification fot user
       final isVerified = await authProvider.checkEmailVerification();
 
       if (isVerified) {
-        // Email is verified! Timer will be cleaned up in dispose()
-        // Navigation happens automatically via App widget
-        debugPrint('✅ Email verified! App widget will handle navigation.');
+        //automatic navigation
+        debugPrint(' Email verified! App widget will handle navigation.');
       }
     });
   }
