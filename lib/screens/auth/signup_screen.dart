@@ -79,7 +79,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 20),
 
                   const Text(
-                    'Join Our Community',
+                    'Join Beautiful Kigali',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),

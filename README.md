@@ -8,12 +8,12 @@ The app follows a clean architecture pattern with clear separation of concerns:
 
 ```
 lib/
-├── models/              # Data models (Listing, User, etc.)
-├── services/            # Business logic (Firebase, Maps, etc.)
-├── providers/           # State management (Provider package)
+├── models/              # Data models 
+├── services/            # Business logic 
+├── providers/           # State management 
 ├── screens/             # UI screens
 ├── widgets/             # Reusable UI components
-└── core/                # Utilities (validators, constants)
+└── core/                # Utilities 
 ```
 
 ### Data Flow
@@ -112,12 +112,12 @@ Manages listings data and real-time updates.
 
 ```dart
 // Key methods:
-- listenToAllListings()      // All listings in Kigali
-- listenToUserListings()     // Current user's listings
+- listenToAllListings()      
+- listenToUserListings()     
 - createListing(data)
 - updateListing(id, data)
 - deleteListing(id)
-- getFilteredListings(query) // Search/filter
+- getFilteredListings(query) 
 ```
 
 **State**:
@@ -272,9 +272,9 @@ Required permissions in `AndroidManifest.xml`:
 The app uses Firestore listeners for real-time data synchronization:
 
 ```dart
-// In MainNavigationScreen.initState()
-listenToAllListings()   // Updates when any listing changes
-listenToUserListings()  // Updates when user's listings change
+
+listenToAllListings()   
+listenToUserListings()  
 ```
 
 Changes are automatically reflected in the UI through Provider's `notifyListeners()`.
