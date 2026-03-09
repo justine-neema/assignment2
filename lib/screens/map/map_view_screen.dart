@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:latlong2/latlong.dart';
 import 'package:assignment2/models/listing_model.dart';
 import 'package:assignment2/providers/listing_provider.dart';
 import 'package:assignment2/screens/listing/listing_detail_screen.dart';
@@ -39,7 +38,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
   void _searchLocation(String query) {
     if (query.isEmpty) return;
     
-    // Search in listings
     final provider = Provider.of<ListingProvider>(context, listen: false);
     final results = provider.allListings.where((listing) {
       return listing.name.toLowerCase().contains(query.toLowerCase()) ||
@@ -48,7 +46,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
     }).toList();
 
     if (results.isNotEmpty) {
-      // Move to first result
       _mapController.move(results.first.location, 16);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Found ${results.length} result(s)')),
@@ -76,7 +73,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
       ),
       body: Column(
         children: [
-          // Search bar
           Container(
             padding: const EdgeInsets.all(12),
             color: Colors.white,
@@ -104,7 +100,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
               onSubmitted: _searchLocation,
             ),
           ),
-          // Map
           Expanded(
             child: Consumer<ListingProvider>(
         builder: (context, provider, child) {

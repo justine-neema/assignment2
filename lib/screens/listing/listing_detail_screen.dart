@@ -201,6 +201,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                     const Divider(),
                   ],
                   _buildSection('Added on', Icons.access_time, _formatDate(listing.createdAt)),
+                  const Divider(),
+                  _buildSection('Created by', Icons.person, listing.createdBy),
                 ],
               ),
             ),

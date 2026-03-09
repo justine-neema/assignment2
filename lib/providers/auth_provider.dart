@@ -14,7 +14,6 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  // Getters
   User? get user => _user;
   UserModel? get userModel => _userModel;
   bool get isLoading => _isLoading;
@@ -24,10 +23,8 @@ class AuthProvider extends ChangeNotifier {
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   AuthProvider() {
-    // Set initial loading state
     _isLoading = true;
 
-    // Listen to Firebase auth state changes
     _auth.authStateChanges().listen((User? user) {
       _user = user;
       _isLoading = false;
@@ -59,9 +56,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ================================
-  // SIGN UP
-  // ================================
   Future<bool> signUp({
     required String email,
     required String password,
@@ -79,13 +73,10 @@ class AuthProvider extends ChangeNotifier {
 
       final firebaseUser = userCredential.user!;
 
-      // Update display name
       await firebaseUser.updateDisplayName(displayName);
 
-      // Send email verification
       await firebaseUser.sendEmailVerification();
 
-      // Create Firestore user profile
       final userModel = UserModel(
         uid: firebaseUser.uid,
         email: email.trim(),
@@ -99,7 +90,6 @@ class AuthProvider extends ChangeNotifier {
           .doc(firebaseUser.uid)
           .set(userModel.toMap());
 
-      // Reload user
       await firebaseUser.reload();
       _user = _auth.currentUser;
 
@@ -124,9 +114,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ================================
-  // SIGN IN
-  // ================================
   Future<bool> signIn({required String email, required String password}) async {
     _isLoading = true;
     _error = null;
@@ -159,12 +146,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ================================
-  // CHECK EMAIL VERIFICATION
-  // ================================
-  /// Reloads the current user from Firebase and checks email verification.
-  /// Returns true if email is verified.
-  /// Triggers notifyListeners() to update UI via Consumer.
   Future<bool> checkEmailVerification() async {
     try {
       final currentUser = _auth.currentUser;
@@ -173,13 +154,10 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
 
-      // Reload user to get latest data from Firebase
       await currentUser.reload();
 
-      // Get the refreshed user instance
       _user = _auth.currentUser;
 
-      // Notify listeners so App widget (Consumer) rebuilds
       notifyListeners();
 
       return _user?.emailVerified ?? false;
@@ -189,36 +167,24 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ================================
-  // RESEND EMAIL
-  // ================================
   Future<void> resendVerificationEmail() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
     } catch (e) {
       debugPrint("Resend verification error: $e");
-      rethrow; // Re-throw so caller can handle
+      rethrow;
     }
   }
 
-  // ================================
-  // CLEAR ERROR
-  // ================================
   void clearError() {
     _error = null;
     notifyListeners();
   }
 
-  // ================================
-  // SIGN OUT
-  // ================================
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
-  // ================================
-  // RESET PASSWORD
-  // ================================
   Future<bool> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
@@ -232,9 +198,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ================================
-  // UPDATE NOTIFICATIONS
-  // ================================
   Future<void> updateNotificationsPreference(bool enabled) async {
     if (_user == null) return;
 
@@ -261,9 +224,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ================================
-  // GET USER PROFILE
-  // ================================
   Future<UserModel?> getUserProfile(String uid) async {
     try {
       final doc = await _firestore
@@ -281,9 +241,6 @@ class AuthProvider extends ChangeNotifier {
     return null;
   }
 
-  // ================================
-  // UPDATE PROFILE
-  // ================================
   Future<bool> updateUserProfile({
     String? displayName,
     String? photoURL,
@@ -326,9 +283,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ================================
-  // DELETE ACCOUNT
-  // ================================
   Future<bool> deleteAccount() async {
     if (_user == null) return false;
 
@@ -357,9 +311,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ================================
-  // AUTH ERROR HANDLER
-  // ================================
   String _handleAuthError(FirebaseAuthException e) {
     switch (e.code) {
       case 'email-already-in-use':
