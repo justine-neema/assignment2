@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
-    // Clear any previous errors when screen loads
+    // Clear any previous errors when screen clear loads and navigation
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       authProvider.clearError();
@@ -109,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Password field
+                  // Password field to add
                   CustomTextField(
                     controller: _passwordController,
                     label: 'Password',
@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onFieldSubmitted: (_) => _handleLogin(authProvider),
                   ),
 
-                  // Forgot password
+                  // Forgot password page
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   const SizedBox(height: 16),
 
-                  // Sign up link
+                  // Sign up link if user has no account
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -204,10 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
       password: _passwordController.text.trim(),
     );
 
-    // Navigation handled automatically by App widget via Consumer
-    // - If user's email is verified → MainNavigationScreen
-    // - If user's email is NOT verified → VerifyEmailScreen
-    // - If login fails, error is displayed via authProvider.error
+// navigate in other parts
 
     if (success && mounted) {
       // Optional: Show success message

@@ -247,7 +247,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     // Cancel timer before signing out
     _verificationTimer?.cancel();
 
-    // Sign out - App widget will automatically navigate to LoginScreen
+    // Sign out if user wants to
     await authProvider.signOut();
   }
 }
