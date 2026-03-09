@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:assignment2/core/utils/validators.dart';
 import 'package:assignment2/providers/auth_provider.dart';
-import 'package:assignment2/screens/auth/login_screen.dart';
 import 'package:assignment2/widgets/custom_textfield.dart';
 import 'package:assignment2/widgets/loading_widget.dart';
 import 'package:provider/provider.dart';
@@ -275,9 +274,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (success && mounted) {
-      // Pop the signup screen off the stack.
-      // The home route (App widget) will now show VerifyEmailScreen
-      // because the user exists but email is not yet verified.
       Navigator.of(context).pop();
     }
   }
